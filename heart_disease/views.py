@@ -11,14 +11,10 @@ class UserCreateView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            user = CustomUser.objects.create_user(
-                email=serializer.validated_data['email'],
-                username=serializer.validated_data['username'],
-                password=serializer.validated_data['password']  # You might need to hash the password here.
-            )
-            user.save()
+            serializer.save()
             return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserLoginView(APIView):
     def post(self, request):

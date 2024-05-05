@@ -1,21 +1,27 @@
 from rest_framework import serializers
 from .models import CustomUser
 
-
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'password']
+        fields = ['id', 'username', 'password', 'email', 'first_name', 'last_name', 'sex', 'age', 'is_doctor', 'phone_number', 'address']
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(
             email=validated_data['email'],
             username=validated_data['username'],
-            password=validated_data['password']
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            sex=validated_data.get('sex', ''),
+            age=validated_data.get('age', 0),
+            is_doctor=validated_data.get('is_doctor', False),
+            phone_number=validated_data.get('phone_number', ''),
+            address=validated_data.get('address', '')
         )
         return user
+
 
 
 class HeartDiseaseSerializer(serializers.Serializer):
