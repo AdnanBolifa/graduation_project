@@ -3,13 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import CustomUser
-from .serializers import UserSerializer, HeartDiseaseSerializer
-from rest_framework_simplejwt.exceptions import TokenError
 import numpy as np
 from rest_framework.permissions import AllowAny
-from .models import PatientHistory
-from .serializers import PatientHistorySerializer
+from .models import *
+from .serializers import *
 
 class PatientHistoryView(APIView):
     def get(self, request):
