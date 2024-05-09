@@ -6,4 +6,5 @@ urlpatterns = [
     path('login/', UserLoginView.as_view(), name='user_login'),
     path('predict/', HeartDiseasePredict.as_view(), name='heart_disease_predict'),
     path('refresh_token/', RefreshTokenView.as_view(), name='refresh_token'),
+    path('patient_history/', PatientHistoryView.as_view(), name='patient_history'),
 ]

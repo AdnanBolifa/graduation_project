@@ -1,6 +1,26 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
+
+class PatientHistory(models.Model):
+    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
+    age = models.IntegerField()
+    sex = models.IntegerField()
+    cp = models.IntegerField()
+    trestbps = models.IntegerField()
+    chol = models.IntegerField()
+    fbs = models.IntegerField()
+    restecg = models.IntegerField()
+    thalach = models.IntegerField()
+    exang = models.IntegerField()
+    oldpeak = models.FloatField()
+    slope = models.IntegerField()
+    ca = models.IntegerField()
+    thal = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
         if not email:

@@ -8,6 +8,16 @@ from .serializers import UserSerializer, HeartDiseaseSerializer
 from rest_framework_simplejwt.exceptions import TokenError
 import numpy as np
 from rest_framework.permissions import AllowAny
+from .models import PatientHistory
+from .serializers import PatientHistorySerializer
+
+class PatientHistoryView(APIView):
+    def get(self, request):
+        user = request.user
+        patient_history = PatientHistory.objects.filter(user=user)
+        serializer = PatientHistorySerializer(patient_history, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class UserCreateView(APIView):
     def post(self, request):
@@ -40,6 +50,9 @@ class HeartDiseasePredict(APIView):
         serializer = HeartDiseaseSerializer(data=request.data)
         if serializer.is_valid():
             data = serializer.validated_data
+            user = request.user  # Get the current user
+            # Save patient history
+            PatientHistory.objects.create(user=user, **data)
             # Dummy prediction for testing
             prediction = np.random.choice([0, 1])
             return Response({"prediction": prediction}, status=status.HTTP_200_OK)
