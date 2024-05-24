@@ -1,12 +1,17 @@
+import pickle
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-import numpy as np
 from rest_framework.permissions import AllowAny
 from .models import *
 from .serializers import *
+import pandas as pd
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, message="X does not have valid feature names")
+
+
 
 class PatientHistoryView(APIView):
     def get(self, request):
@@ -35,10 +40,16 @@ class UserLoginView(APIView):
             return Response({
                 'refresh': str(refresh),
                 'access': str(refresh.access_token)
-                #'user': UserSerializer(user).data
             }, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+def load_model(filename):
+    with open(filename, 'rb') as f:
+        return pickle.load(f)
+
+LR_model = load_model('C:\\Users\\TheF0x\\Documents\\GitHub\\Graduation-Project\\ml\\model.pkl')
 
 class HeartDiseasePredict(APIView):
     permission_classes = [IsAuthenticated]
@@ -48,11 +59,30 @@ class HeartDiseasePredict(APIView):
         if serializer.is_valid():
             data = serializer.validated_data
             user = request.user  # Get the current user
-            # Save patient history
-            PatientHistory.objects.create(user=user, **data)
-            # Dummy prediction for testing
-            prediction = np.random.choice([0, 1])
-            return Response({"prediction": prediction}, status=status.HTTP_200_OK)
+
+            features = [
+                data['sex'], data['age'], data['currentSmoker'], data['cigsPerDay'], 
+                data['BPMeds'], data['prevalentStroke'], data['prevalentHyp'], 
+                data['diabetes'], data['totChol'], data['sysBP'], data['diaBP'], 
+                data['BMI'], data['heartRate'], data['glucose']
+            ]
+
+            user_data = pd.DataFrame([features])
+
+            try:
+                prediction = LR_model.predict(user_data)
+                probability = LR_model.predict_proba(user_data)
+
+                result = {
+                    "prediction": int(prediction[0]),
+                    "probability_positive": probability[0][1] * 100,
+                    "probability_negative": probability[0][0] * 100
+                }
+                data['TenYearCHD'] = prediction[0]
+                PatientHistory.objects.create(user=user, **data)
+                return Response(result, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RefreshTokenView(APIView):
@@ -70,3 +100,18 @@ class RefreshTokenView(APIView):
             return Response({"access_token": access_token}, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=400)
+        
+class FeedbackView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        serializer = FeedbackSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            try:
+                patient_history = PatientHistory.objects.get(id=data['patient_history_id'])
+                patient_history.doctor_feedback = data['prediction_result']
+                patient_history.save()
+                return Response({"message": "Feedback saved successfully."})
+            except PatientHistory.DoesNotExist:
+                return Response({"error": "Patient history not found."}, status=404)
+        return Response(serializer.errors, status=400)

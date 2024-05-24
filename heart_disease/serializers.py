@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser
-from .models import PatientHistory
+from .models import *
 
 class PatientHistorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,16 +30,22 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class HeartDiseaseSerializer(serializers.Serializer):
-    age = serializers.IntegerField()
     sex = serializers.IntegerField()
-    cp = serializers.IntegerField()
-    trestbps = serializers.IntegerField()
-    chol = serializers.IntegerField()
-    fbs = serializers.IntegerField()
-    restecg = serializers.IntegerField()
-    thalach = serializers.IntegerField()
-    exang = serializers.IntegerField()
-    oldpeak = serializers.FloatField()
-    slope = serializers.IntegerField()
-    ca = serializers.IntegerField()
-    thal = serializers.IntegerField()
+    age = serializers.IntegerField()
+    currentSmoker = serializers.IntegerField()
+    cigsPerDay = serializers.IntegerField()
+    BPMeds = serializers.IntegerField()
+    prevalentStroke = serializers.IntegerField()
+    prevalentHyp = serializers.IntegerField()
+    diabetes = serializers.IntegerField()
+    totChol = serializers.IntegerField()
+    sysBP = serializers.IntegerField()
+    diaBP = serializers.IntegerField()
+    BMI = serializers.FloatField()
+    heartRate = serializers.IntegerField()
+    glucose = serializers.IntegerField()
+
+class FeedbackSerializer(serializers.Serializer):
+    patient_history_id = serializers.IntegerField()
+    user_id = serializers.IntegerField()
+    prediction_result = serializers.BooleanField()
