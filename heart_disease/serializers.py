@@ -30,6 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class HeartDiseaseSerializer(serializers.Serializer):
+    patientName = serializers.CharField()
     sex = serializers.IntegerField()
     age = serializers.IntegerField()
     currentSmoker = serializers.IntegerField()
@@ -44,8 +45,8 @@ class HeartDiseaseSerializer(serializers.Serializer):
     BMI = serializers.FloatField()
     heartRate = serializers.IntegerField()
     glucose = serializers.IntegerField()
+    prediction_result = models.BooleanField()
 
 class FeedbackSerializer(serializers.Serializer):
     patient_history_id = serializers.IntegerField()
-    user_id = serializers.IntegerField()
     prediction_result = serializers.BooleanField()

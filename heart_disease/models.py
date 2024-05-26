@@ -20,6 +20,7 @@ class CustomUser(AbstractUser):
 
 class PatientHistory(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
+    patientName = models.CharField(max_length=50, null=True, default=None, blank=True)
     sex = models.IntegerField(null=True, default=None, blank=True)
     age = models.IntegerField(null=True, default=None, blank=True)
     currentSmoker = models.IntegerField(null=True, default=None, blank=True)

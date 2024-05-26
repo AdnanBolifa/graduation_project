@@ -11,12 +11,16 @@ import pandas as pd
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, message="X does not have valid feature names")
 
+def load_model(filename):
+    with open(filename, 'rb') as f:
+        return pickle.load(f)
 
+LR_model = load_model('C:\\Users\\TheF0x\\Documents\\GitHub\\Graduation-Project\\ml\\model.pkl')
 
 class PatientHistoryView(APIView):
     def get(self, request):
         user = request.user
-        patient_history = PatientHistory.objects.filter(user=user)
+        patient_history = PatientHistory.objects.filter(user=user).order_by('-created_at')
         serializer = PatientHistorySerializer(patient_history, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -28,7 +32,6 @@ class UserCreateView(APIView):
             serializer.save()
             return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class UserLoginView(APIView):
     def post(self, request):
@@ -43,13 +46,6 @@ class UserLoginView(APIView):
             }, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
-
-def load_model(filename):
-    with open(filename, 'rb') as f:
-        return pickle.load(f)
-
-LR_model = load_model('C:\\Users\\TheF0x\\Documents\\GitHub\\Graduation-Project\\ml\\model.pkl')
 
 class HeartDiseasePredict(APIView):
     permission_classes = [IsAuthenticated]
