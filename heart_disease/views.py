@@ -1,4 +1,6 @@
+import os
 import pickle
+import joblib
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,8 +16,12 @@ warnings.filterwarnings("ignore", category=UserWarning, message="X does not have
 def load_model(filename):
     with open(filename, 'rb') as f:
         return pickle.load(f)
+    
+current_dir = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(current_dir, '..', 'ml', 'model.pkl')
 
-LR_model = load_model('C:\\Users\\TheF0x\\Documents\\GitHub\\Graduation-Project\\ml\\model.pkl')
+
+LR_model = load_model(model_path)
 
 class PatientHistoryView(APIView):
     def get(self, request):
