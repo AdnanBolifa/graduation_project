@@ -18,7 +18,7 @@ def load_model(filename):
         return pickle.load(f)
     
 current_dir = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(current_dir, '..', 'ml', 'model.pkl')
+model_path = os.path.join(current_dir, '..', 'models', 'model.pkl')
 
 
 LR_model = load_model(model_path)
