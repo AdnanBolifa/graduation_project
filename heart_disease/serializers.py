@@ -47,6 +47,22 @@ class HeartDiseaseSerializer(serializers.Serializer):
     glucose = serializers.IntegerField()
     prediction_result = models.BooleanField()
 
+from rest_framework import serializers
+
+class DiabetesPredictionSerializer(serializers.Serializer):
+    Gender = serializers.IntegerField()
+    AGE = serializers.IntegerField()
+    Urea = serializers.FloatField()
+    Cr = serializers.FloatField()
+    HbA1c = serializers.FloatField()
+    Chol = serializers.FloatField()
+    TG = serializers.FloatField()
+    HDL = serializers.FloatField()
+    LDL = serializers.FloatField()
+    VLDL = serializers.FloatField()
+    BMI = serializers.FloatField()
+
+
 class FeedbackSerializer(serializers.Serializer):
     patient_history_id = serializers.IntegerField()
     prediction_result = serializers.BooleanField()

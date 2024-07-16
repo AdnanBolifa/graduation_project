@@ -1,6 +1,5 @@
 import os
 import pickle
-import joblib
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -18,10 +17,14 @@ def load_model(filename):
         return pickle.load(f)
     
 current_dir = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(current_dir, '..', 'models', 'model.pkl')
 
+# Load the heart disease model
+heart_model_path = os.path.join(current_dir, '..', 'models', 'heart.pkl')
+heart_model = load_model(heart_model_path)
 
-LR_model = load_model(model_path)
+# Load the diabetes model
+diabetes_model_path = os.path.join(current_dir, '..', 'models', 'diabetes_model.pkl')
+diabetes_model = load_model(diabetes_model_path)
 
 class PatientHistoryView(APIView):
     def get(self, request):
@@ -29,8 +32,7 @@ class PatientHistoryView(APIView):
         patient_history = PatientHistory.objects.filter(user=user).order_by('-created_at')
         serializer = PatientHistorySerializer(patient_history, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
+    
 class UserCreateView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -53,6 +55,37 @@ class UserLoginView(APIView):
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
+class DiabetesPredict(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = DiabetesPredictionSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            user = request.user
+
+            features = [
+                data['Gender'], data['AGE'], data['Urea'], data['Cr'], data['HbA1c'],
+                data['Chol'], data['TG'], data['HDL'], data['LDL'], data['VLDL'], data['BMI']
+            ]
+
+            user_data = pd.DataFrame([features])
+
+            try:
+                prediction = diabetes_model.predict(user_data)
+                probability = diabetes_model.predict_proba(user_data)
+
+                result = {
+                    "prediction": int(prediction[0]),
+                    "probability_positive": probability[0][1] * 100,
+                    "probability_negative": probability[0][0] * 100
+                }
+                data['CLASS'] = prediction[0]
+                PatientHistory.objects.create(user=user, **data)
+                return Response(result, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class HeartDiseasePredict(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -72,8 +105,8 @@ class HeartDiseasePredict(APIView):
             user_data = pd.DataFrame([features])
 
             try:
-                prediction = LR_model.predict(user_data)
-                probability = LR_model.predict_proba(user_data)
+                prediction = heart_model.predict(user_data)
+                probability = heart_model.predict_proba(user_data)
 
                 result = {
                     "prediction": int(prediction[0]),
