@@ -9,14 +9,29 @@ class PatientHistorySerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'password', 'email', 'first_name', 'last_name', 'sex', 'age', 'is_doctor', 'phone_number', 'address']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = '__all__'
+        extra_kwargs = {
+            'username': {'required': False},
+            'first_name': {'required': False},
+            'last_name': {'required': False},
+            'sex': {'required': False},
+            'age': {'required': False},
+            'is_doctor': {'required': False},
+            'phone_number': {'required': False},
+            'address': {'required': False},
+            'password': {'write_only': True}
+        }
 
     def create(self, validated_data):
+        username = validated_data.get('username')
+        if not username:
+            # Generate a unique username using the email or another method
+            username = validated_data['email'].split('@')[0]
+        
         user = CustomUser.objects.create_user(
             email=validated_data['email'],
-            username=validated_data['username'],
             password=validated_data['password'],
+            username=username,
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
             sex=validated_data.get('sex', ''),
@@ -28,11 +43,26 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
+class HypertensionSerializer(serializers.Serializer):
+    patientName = serializers.CharField()
+    sex = serializers.CharField()
+    age = serializers.IntegerField()
+    BMI = serializers.FloatField()
+    currentSmoker = serializers.IntegerField()
+    cigsPerDay = serializers.IntegerField()
+    BPMeds = serializers.IntegerField()
+    diabetes = serializers.IntegerField()
+    totChol = serializers.IntegerField()
+    sysBP = serializers.IntegerField()
+    diaBP = serializers.IntegerField()
+    heartRate = serializers.IntegerField()
+    glucose = serializers.IntegerField()
 
 class HeartDiseaseSerializer(serializers.Serializer):
     patientName = serializers.CharField()
     sex = serializers.IntegerField()
     age = serializers.IntegerField()
+    BMI = serializers.FloatField()
     currentSmoker = serializers.IntegerField()
     cigsPerDay = serializers.IntegerField()
     BPMeds = serializers.IntegerField()
@@ -42,16 +72,25 @@ class HeartDiseaseSerializer(serializers.Serializer):
     totChol = serializers.IntegerField()
     sysBP = serializers.IntegerField()
     diaBP = serializers.IntegerField()
-    BMI = serializers.FloatField()
     heartRate = serializers.IntegerField()
     glucose = serializers.IntegerField()
-    prediction_result = models.BooleanField()
 
-from rest_framework import serializers
+class DiabetesSerializer(serializers.Serializer):
+    patientName = serializers.CharField()
+    sex = serializers.IntegerField()
+    age = serializers.IntegerField()
+    BMI = serializers.FloatField()
+    Pregnancies = serializers.IntegerField()
+    Glucose = serializers.IntegerField()
+    BloodPressure = serializers.IntegerField()
+    SkinThickness = serializers.IntegerField()
+    Insulin = serializers.IntegerField()
+    DiabetesPedigreeFunction = serializers.FloatField()
 
-class DiabetesPredictionSerializer(serializers.Serializer):
-    Gender = serializers.IntegerField()
-    AGE = serializers.IntegerField()
+class DiabetesVipSerializer(serializers.Serializer):
+    patientName = serializers.CharField()
+    sex = serializers.IntegerField()
+    age = serializers.IntegerField()
     Urea = serializers.FloatField()
     Cr = serializers.FloatField()
     HbA1c = serializers.FloatField()
@@ -61,7 +100,7 @@ class DiabetesPredictionSerializer(serializers.Serializer):
     LDL = serializers.FloatField()
     VLDL = serializers.FloatField()
     BMI = serializers.FloatField()
-
+    CLASS = serializers.IntegerField(required=False)
 
 class FeedbackSerializer(serializers.Serializer):
     patient_history_id = serializers.IntegerField()
